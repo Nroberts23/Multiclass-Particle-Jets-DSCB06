@@ -82,7 +82,7 @@ def main(targets):
         with open('config/model-params.json') as fh:
             data_cfg = json.load(fh)
             
-            
+        
         create_models(**definitions, **data_cfg)        
         
 

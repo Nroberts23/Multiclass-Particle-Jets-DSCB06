@@ -27,20 +27,29 @@ def visualize_loss(model):
     
 #used in src/model/baseline_model.py, src/model/model.py
 def visualize_roc(fpr_cnn, tpr_cnn, fpr_dnn=None, tpr_dnn=None, dense=False):
+    fig = plt.figure(figsize=(16, 10))
+    fig.suptitle('ROC Curves by Class of Particle')
     
-    plt.figure()
-    if dense:
-        plt.plot(tpr_dnn, fpr_dnn, lw=2.5, label="Dense, AUC = {:.1f}%".format(auc(fpr_dnn,tpr_dnn)*100))
-        plt.plot(tpr_cnn, fpr_cnn, lw=2.5, label="Conv1D, AUC = {:.1f}%".format(auc(fpr_cnn,tpr_cnn)*100))
-    else:
-        plt.plot(tpr_cnn, fpr_cnn, lw=2.5, label="Conv1D, AUC = {:.1f}%".format(auc(fpr_cnn,tpr_cnn)*100))
-    plt.xlabel(r'True positive rate')
-    plt.ylabel(r'False positive rate')
-    plt.semilogy()
-    plt.ylim(0.001,1)
-    plt.xlim(0,1)
-    plt.grid(True)
-    plt.legend(loc='upper left')
+    labels = ['QCD_b', 'QCD_bb', 'QCD_c', 'QCD_cc', 'QCD_other', 'H_bb']
+    for i in range(len(labels)):
+        ax = fig.add_subplot(2, 3, i + 1) #create a new set of axis at location i in the figure
+    
+        if dense:
+            ax.plot(tpr_dnn[i], fpr_dnn[i], lw=2.5, label="Dense, AUC = {:.1f}%".format(auc(fpr_dnn[i],tpr_dnn[i])*100))
+            ax.plot(tpr_cnn[i], fpr_cnn[i], lw=2.5, label="Conv1D, AUC = {:.1f}%".format(auc(fpr_cnn[i],tpr_cnn[i])*100))
+        else:
+            ax.plot(tpr_cnn[i], fpr_cnn[i], lw=2.5, label="Conv1D, AUC = {:.1f}%".format(auc(fpr_cnn[i],tpr_cnn[i])*100))
+        
+        ax.set_title(str(labels[i]))
+        ax.set_xlabel(r'True positive rate')
+        ax.set_xscale('log')
+        ax.set_ylabel(r'False positive rate')
+        ax.set_yscale('log')
+        ax.set_ylim(0.001,1)
+        ax.set_xlim(0.001,1)
+        ax.grid(True)
+        ax.legend(loc='upper left')
+    
     plt.show()
     
     return None
