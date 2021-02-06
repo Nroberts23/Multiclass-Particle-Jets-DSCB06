@@ -130,7 +130,7 @@ class DataGenerator(tensorflow.keras.utils.Sequence):
                                       entrystart=entrystart,
                                       entrystop=entrystop,
                                       namedecode='utf-8')
-
+        
         X = np.stack([feature_array[feat].pad(self.n_dim, clip=True).fillna(0).regular() for feat in self.features],axis=2)
         n_samples = X.shape[0]
     

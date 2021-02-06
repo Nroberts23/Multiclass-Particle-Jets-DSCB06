@@ -55,7 +55,7 @@ def main(targets):
                 
         with open('config/test-model-params.json') as fh:
             data_cfg = json.load(fh)
-        create_baseline_model(**definitions, **data_cfg, is_test=True)
+        create_models(**definitions, **data_cfg)
         
         
     if 'all' in targets:
@@ -82,7 +82,7 @@ def main(targets):
         with open('config/model-params.json') as fh:
             data_cfg = json.load(fh)
             
-            
+        
         create_models(**definitions, **data_cfg)        
         
 

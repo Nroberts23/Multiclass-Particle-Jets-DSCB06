@@ -25,22 +25,22 @@ from visualize import visualize_loss
 from visualize import visualize_roc
 
 #setting seeds for consistent results
-np.random.seed(1)
-set_random_seed(2)
+np.random.seed(2)
+set_random_seed(3)
 
 
 def create_models(features, spectators, labels, nfeatures, nspectators, nlabels, ntracks, train_files, test_files, val_files, batch_size, remove_mass_pt_window, remove_unlabeled, max_entry):
 
 
-    train_generator = DataGenerator([train_files], features, labels, spectators, batch_size=batch_size, n_dim=ntracks, 
+    train_generator = DataGenerator(train_files, features, labels, spectators, batch_size=batch_size, n_dim=ntracks, 
                                 remove_mass_pt_window=remove_mass_pt_window, 
                                 remove_unlabeled=remove_unlabeled, max_entry=max_entry)
     
-    val_generator = DataGenerator([val_files], features, labels, spectators, batch_size=batch_size, n_dim=ntracks, 
+    val_generator = DataGenerator(val_files, features, labels, spectators, batch_size=batch_size, n_dim=ntracks, 
                                 remove_mass_pt_window=remove_mass_pt_window, 
                                 remove_unlabeled=remove_unlabeled, max_entry=max_entry)
     
-    test_generator = DataGenerator([test_files], features, labels, spectators, batch_size=batch_size, n_dim=ntracks, 
+    test_generator = DataGenerator(test_files, features, labels, spectators, batch_size=batch_size, n_dim=ntracks, 
                                 remove_mass_pt_window=remove_mass_pt_window, 
                                 remove_unlabeled=remove_unlabeled, max_entry=max_entry)
     
@@ -50,6 +50,8 @@ def create_models(features, spectators, labels, nfeatures, nspectators, nlabels,
     import tensorflow.keras.backend as K
 
 
+    
+    
     # FULLY CONNECTED NEURAL NET CLASSIFIER
     
 
@@ -104,7 +106,7 @@ def create_models(features, spectators, labels, nfeatures, nspectators, nlabels,
     
     # sum over tracks
     x = GlobalAveragePooling1D(name='pool_1')(x)
-    x = Dense(100, name = 'dense_1', activation='sigmoid')(x)
+    x = Dense(100, name = 'dense_1', activation='relu')(x)
     outputs = Dense(nlabels, name = 'output', activation='softmax')(x)
     
     
@@ -122,22 +124,28 @@ def create_models(features, spectators, labels, nfeatures, nspectators, nlabels,
     initial_learning_rate = 0.001
     decay = initial_learning_rate / num_epochs
     learn_rate_decay = lambda epoch, lr: lr * 1 / (1 + decay * epoch)
+    reduce_lr2 = ReduceLROnPlateau(patience=5,factor=0.5)
     
     #reduce_lr = ReduceLROnPlateau(patience=5,factor=0.5)
     reduce_lr = LearningRateScheduler(learn_rate_decay)
     model_checkpoint = ModelCheckpoint('keras_model_conv1d_best.h5', monitor='val_loss', save_best_only=True)
-    callbacks = [early_stopping, model_checkpoint, reduce_lr]
-
+    #callbacks = [early_stopping, model_checkpoint, reduce_lr2]
+    callbacks = [early_stopping, model_checkpoint, reduce_lr2]
+    
+    #weights for training
+    training_weights = {0:3.479, 1:4.002, 2:3.246, 3:2.173, 4:0.253, 5:1.360}
+    training_weights2 = {0:1, 1:1, 2:1, 3:1, 4:1, 5:1}
     # fit keras model
-    history_conv1d = keras_model_conv1d.fit(train_generator, 
-                                            validation_data = val_generator, 
-                                            steps_per_epoch=len(train_generator), 
-                                            validation_steps=len(val_generator),
-                                            max_queue_size=5,
-                                            epochs=num_epochs, 
-                                            shuffle=False,
-                                            callbacks = callbacks, 
-                                            verbose=0)
+    history_conv1d = keras_model_conv1d.fit_generator(train_generator, 
+                                                      validation_data = val_generator, 
+                                                      steps_per_epoch=len(train_generator), 
+                                                      validation_steps=len(val_generator),
+                                                      max_queue_size=5,
+                                                      epochs=num_epochs,
+                                                      class_weight=training_weights,
+                                                      shuffle=False,
+                                                      callbacks = callbacks, 
+                                                      verbose=0)
     # reload best weights
     keras_model_conv1d.load_weights('keras_model_conv1d_best.h5')
 
@@ -160,10 +168,20 @@ def create_models(features, spectators, labels, nfeatures, nspectators, nlabels,
     predict_array_cnn = np.concatenate(predict_array_cnn,axis=0)
     label_array_test = np.concatenate(label_array_test,axis=0)
 
-
-    # create ROC curves
-    fpr_dnn, tpr_dnn, threshold_dnn = roc_curve(label_array_test[:,1], predict_array_dnn[:,1])
-    fpr_cnn, tpr_cnn, threshold_cnn = roc_curve(label_array_test[:,1], predict_array_cnn[:,1])
+    fpr_dnn = []
+    tpr_dnn = []
+    fpr_cnn = []
+    tpr_cnn = []
+    # create ROC curves for each class
+    for i in range(nlabels):
+        t_fpr_d, t_tpr_d, thresh_d = roc_curve(label_array_test[:,i], predict_array_dnn[:,i])
+        t_fpr_c, t_tpr_c, thresh_c = roc_curve(label_array_test[:,i], predict_array_cnn[:,i])
+        
+        #appending
+        fpr_dnn.append(t_fpr_d)
+        tpr_dnn.append(t_tpr_d)
+        fpr_cnn.append(t_fpr_c)
+        tpr_cnn.append(t_tpr_c)
 
     # plot ROC curves
     visualize_roc(fpr_cnn, tpr_cnn, fpr_dnn, tpr_dnn, True)
