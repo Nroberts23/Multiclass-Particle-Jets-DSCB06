@@ -71,10 +71,10 @@ def create_models(features, spectators, labels, nfeatures, nspectators, nlabels,
     print(keras_model_dense.summary())
 
     # define callbacks
-    early_stopping = EarlyStopping(monitor='val_loss', patience=5)
+    early_stopping = EarlyStopping(monitor='val_loss', patience=35)
     reduce_lr = ReduceLROnPlateau(patience=5,factor=0.5)
     model_checkpoint = ModelCheckpoint('keras_model_dense_best.h5', monitor='val_loss', save_best_only=True)
-    callbacks = [model_checkpoint, reduce_lr]
+    callbacks = [early_stopping, model_checkpoint, reduce_lr]
 
     # fit keras model
     history_dense = keras_model_dense.fit_generator(train_generator, 
@@ -101,14 +101,16 @@ def create_models(features, spectators, labels, nfeatures, nspectators, nlabels,
     # define Deep Sets model with Conv1D Keras layer
     inputs = Input(shape=(ntracks,nfeatures,), name = 'input')  
     x = BatchNormalization(name='bn_1')(inputs)
-    x = Conv1D(ntracks, 1, strides=1, padding='same', name = 'conv1d_1', activation='relu')(x)
-    x = Conv1D(ntracks, 1, strides=1, padding='same', name = 'conv1d_2', activation='relu')(x)
+    x = Conv1D(64, 1, strides=1, padding='same', name = 'conv1d_1', activation='relu')(x)
+    x = Conv1D(32, 1, strides=1, padding='same', name = 'conv1d_2', activation='relu')(x)
+    x = Conv1D(32, 1, strides=1, padding='same', name = 'conv1d_3', activation='relu')(x)
+    
     #x = Conv1D(32, 1, strides=1, padding='same', name = 'conv1d_3', activation='relu')(x)
     #x = Conv1D(32, 1, strides=1, padding='same', name = 'conv1d_4', activation='relu')(x)
     
     # sum over tracks
     x = GlobalAveragePooling1D(name='pool_1')(x)
-    x = Dense(100, name = 'dense_1', activation='sigmoid')(x)
+    x = Dense(100, name = 'dense_1', activation='relu')(x)
     outputs = Dense(nlabels, name = 'output', activation='softmax')(x)
     
     
@@ -119,7 +121,7 @@ def create_models(features, spectators, labels, nfeatures, nspectators, nlabels,
     # define callbacks
     from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau
 
-    early_stopping = EarlyStopping(monitor='val_loss', patience=5)
+    early_stopping = EarlyStopping(monitor='val_loss', patience=35)
     
     #defining learningrate decay model
     num_epochs = 200
@@ -132,7 +134,7 @@ def create_models(features, spectators, labels, nfeatures, nspectators, nlabels,
     reduce_lr = LearningRateScheduler(learn_rate_decay)
     model_checkpoint = ModelCheckpoint('keras_model_conv1d_best.h5', monitor='val_loss', save_best_only=True)
     #callbacks = [early_stopping, model_checkpoint, reduce_lr2]
-    callbacks = [model_checkpoint, reduce_lr2]
+    callbacks = [early_stopping, model_checkpoint, reduce_lr2]
     
     #weights for training
     training_weights = {0:3.479, 1:4.002, 2:3.246, 3:2.173, 4:0.253, 5:1.360}
