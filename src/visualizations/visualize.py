@@ -26,7 +26,7 @@ def visualize_loss(model):
     return None
     
 #used in src/model/baseline_model.py, src/model/model.py
-def visualize_roc(fpr_cnn, tpr_cnn, fpr_dnn=None, tpr_dnn=None, dense=False):
+def visualize_roc(fpr_cnn, tpr_cnn, fpr_dnn=None, tpr_dnn=None, fpr_gnn=None, tpr_gnn=None):
     fig = plt.figure(figsize=(16, 10))
     fig.suptitle('ROC Curves by Class of Particle')
     
@@ -34,11 +34,9 @@ def visualize_roc(fpr_cnn, tpr_cnn, fpr_dnn=None, tpr_dnn=None, dense=False):
     for i in range(len(labels)):
         ax = fig.add_subplot(2, 3, i + 1) #create a new set of axis at location i in the figure
     
-        if dense:
-            ax.plot(tpr_dnn[i], fpr_dnn[i], lw=2.5, label="Dense, AUC = {:.1f}%".format(auc(fpr_dnn[i],tpr_dnn[i])*100))
-            ax.plot(tpr_cnn[i], fpr_cnn[i], lw=2.5, label="Conv1D, AUC = {:.1f}%".format(auc(fpr_cnn[i],tpr_cnn[i])*100))
-        else:
-            ax.plot(tpr_cnn[i], fpr_cnn[i], lw=2.5, label="Conv1D, AUC = {:.1f}%".format(auc(fpr_cnn[i],tpr_cnn[i])*100))
+        ax.plot(tpr_dnn[i], fpr_dnn[i], lw=2.5, label="Dense, AUC = {:.1f}%".format(auc(fpr_dnn[i],tpr_dnn[i])*100))
+        ax.plot(tpr_cnn[i], fpr_cnn[i], lw=2.5, label="Conv1D, AUC = {:.1f}%".format(auc(fpr_cnn[i],tpr_cnn[i])*100))
+        ax.plot(tpr_gnn[i], fpr_gnn[i], lw=2.5, label="Graph, AUC = {:.1f}%".format(auc(fpr_gnn[i],tpr_gnn[i])*100))
         
         ax.set_title(str(labels[i]))
         ax.set_xlabel(r'True positive rate')

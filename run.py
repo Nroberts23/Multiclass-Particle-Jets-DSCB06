@@ -47,7 +47,7 @@ def main(targets):
         create_models(**definitions, **data_cfg)
         
     if 'test' in targets:
-        with open('config/test-data-params.yml') as file:
+        with open('config/data-params.yml') as file:
             # The FullLoader parameter handles the conversion from YAML
 #                 # scalar values to Python the dictionary format
             definitions = yaml.load(file, Loader=yaml.FullLoader)
