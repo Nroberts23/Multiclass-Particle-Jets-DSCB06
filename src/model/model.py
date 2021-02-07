@@ -12,6 +12,10 @@ from sklearn.metrics import roc_curve, auc
 import matplotlib.pyplot as plt
 import uproot
 
+
+import tensorflow.keras.backend as K
+
+
 import yaml
 
 from DataGenerator import DataGenerator
@@ -31,7 +35,12 @@ set_random_seed(3)
 
 def create_models(features, spectators, labels, nfeatures, nspectators, nlabels, ntracks, train_files, test_files, val_files, batch_size, remove_mass_pt_window, remove_unlabeled, max_entry):
 
-
+    #imports
+    from tensorflow.keras.models import Model
+    from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau
+    from tensorflow.keras.layers import Input, Dense, BatchNormalization, Conv1D, Flatten, Lambda
+    
+    # DATA GENERATORS FOR USE IN MODEL TRAINING AND TESTING
     train_generator = DataGenerator(train_files, features, labels, spectators, batch_size=batch_size, n_dim=ntracks, 
                                 remove_mass_pt_window=remove_mass_pt_window, 
                                 remove_unlabeled=remove_unlabeled, max_entry=max_entry)
@@ -43,15 +52,9 @@ def create_models(features, spectators, labels, nfeatures, nspectators, nlabels,
     test_generator = DataGenerator(test_files, features, labels, spectators, batch_size=batch_size, n_dim=ntracks, 
                                 remove_mass_pt_window=remove_mass_pt_window, 
                                 remove_unlabeled=remove_unlabeled, max_entry=max_entry)
-    
-    
-    from tensorflow.keras.models import Model
-    from tensorflow.keras.layers import Input, Dense, BatchNormalization, Conv1D, Flatten, Lambda
-    import tensorflow.keras.backend as K
+ 
 
 
-    
-    
     # FULLY CONNECTED NEURAL NET CLASSIFIER
     
 
@@ -68,12 +71,10 @@ def create_models(features, spectators, labels, nfeatures, nspectators, nlabels,
     print(keras_model_dense.summary())
 
     # define callbacks
-    from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau
-
     early_stopping = EarlyStopping(monitor='val_loss', patience=5)
     reduce_lr = ReduceLROnPlateau(patience=5,factor=0.5)
     model_checkpoint = ModelCheckpoint('keras_model_dense_best.h5', monitor='val_loss', save_best_only=True)
-    callbacks = [early_stopping, model_checkpoint, reduce_lr]
+    callbacks = [model_checkpoint, reduce_lr]
 
     # fit keras model
     history_dense = keras_model_dense.fit_generator(train_generator, 
@@ -81,7 +82,7 @@ def create_models(features, spectators, labels, nfeatures, nspectators, nlabels,
                                                     steps_per_epoch=len(train_generator), 
                                                     validation_steps=len(val_generator),
                                                     max_queue_size=5,
-                                                    epochs=20, 
+                                                    epochs=50, 
                                                     shuffle=False,
                                                     callbacks = callbacks, 
                                                     verbose=0)
@@ -100,13 +101,14 @@ def create_models(features, spectators, labels, nfeatures, nspectators, nlabels,
     # define Deep Sets model with Conv1D Keras layer
     inputs = Input(shape=(ntracks,nfeatures,), name = 'input')  
     x = BatchNormalization(name='bn_1')(inputs)
-    x = Conv1D(32, 1, strides=1, padding='same', name = 'conv1d_1', activation='relu')(x)
-    x = Conv1D(32, 1, strides=1, padding='same', name = 'conv1d_2', activation='relu')(x)
-    x = Conv1D(16, 1, strides=1, padding='same', name = 'conv1d_3', activation='relu')(x)
+    x = Conv1D(ntracks, 1, strides=1, padding='same', name = 'conv1d_1', activation='relu')(x)
+    x = Conv1D(ntracks, 1, strides=1, padding='same', name = 'conv1d_2', activation='relu')(x)
+    #x = Conv1D(32, 1, strides=1, padding='same', name = 'conv1d_3', activation='relu')(x)
+    #x = Conv1D(32, 1, strides=1, padding='same', name = 'conv1d_4', activation='relu')(x)
     
     # sum over tracks
     x = GlobalAveragePooling1D(name='pool_1')(x)
-    x = Dense(100, name = 'dense_1', activation='relu')(x)
+    x = Dense(100, name = 'dense_1', activation='sigmoid')(x)
     outputs = Dense(nlabels, name = 'output', activation='softmax')(x)
     
     
@@ -121,7 +123,7 @@ def create_models(features, spectators, labels, nfeatures, nspectators, nlabels,
     
     #defining learningrate decay model
     num_epochs = 200
-    initial_learning_rate = 0.001
+    initial_learning_rate = 0.01
     decay = initial_learning_rate / num_epochs
     learn_rate_decay = lambda epoch, lr: lr * 1 / (1 + decay * epoch)
     reduce_lr2 = ReduceLROnPlateau(patience=5,factor=0.5)
@@ -130,7 +132,7 @@ def create_models(features, spectators, labels, nfeatures, nspectators, nlabels,
     reduce_lr = LearningRateScheduler(learn_rate_decay)
     model_checkpoint = ModelCheckpoint('keras_model_conv1d_best.h5', monitor='val_loss', save_best_only=True)
     #callbacks = [early_stopping, model_checkpoint, reduce_lr2]
-    callbacks = [early_stopping, model_checkpoint, reduce_lr2]
+    callbacks = [model_checkpoint, reduce_lr2]
     
     #weights for training
     training_weights = {0:3.479, 1:4.002, 2:3.246, 3:2.173, 4:0.253, 5:1.360}
