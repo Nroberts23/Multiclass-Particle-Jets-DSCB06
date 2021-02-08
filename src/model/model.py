@@ -3,7 +3,7 @@ import json
 import numpy as np
 
 import tensorflow.keras as keras
-#from tensorflow import set_random_seed
+from tensorflow import set_random_seed
 from tensorflow.keras.optimizers.schedules import ExponentialDecay
 from tensorflow.keras.callbacks import LearningRateScheduler
 from tensorflow.keras.optimizers import SGD
@@ -29,8 +29,8 @@ from visualize import visualize_loss
 from visualize import visualize_roc
 
 #setting seeds for consistent results
-#np.random.seed(2)
-#set_random_seed(3)
+np.random.seed(2)
+set_random_seed(3)
 
 #GNN Additions
 from GraphDataset import GraphDataset
@@ -78,7 +78,7 @@ def create_models(features, spectators, labels, nfeatures, nspectators, nlabels,
     early_stopping = EarlyStopping(monitor='val_loss', patience=35)
     reduce_lr = ReduceLROnPlateau(patience=5,factor=0.5)
     model_checkpoint = ModelCheckpoint('keras_model_dense_best.h5', monitor='val_loss', save_best_only=True)
-    callbacks = [model_checkpoint, reduce_lr]
+    callbacks = [early_stopping, model_checkpoint, reduce_lr]
 
     # fit keras model
     history_dense = keras_model_dense.fit_generator(train_generator, 
@@ -86,7 +86,7 @@ def create_models(features, spectators, labels, nfeatures, nspectators, nlabels,
                                                     steps_per_epoch=len(train_generator), 
                                                     validation_steps=len(val_generator),
                                                     max_queue_size=5,
-                                                    epochs=1, 
+                                                    epochs=50, 
                                                     shuffle=False,
                                                     callbacks = callbacks, 
                                                     verbose=0)
@@ -128,7 +128,7 @@ def create_models(features, spectators, labels, nfeatures, nspectators, nlabels,
     early_stopping = EarlyStopping(monitor='val_loss', patience=35)
     
     #defining learningrate decay model
-    num_epochs = 1
+    num_epochs = 100
     initial_learning_rate = 0.01
     decay = initial_learning_rate / num_epochs
     learn_rate_decay = lambda epoch, lr: lr * 1 / (1 + decay * epoch)
@@ -138,7 +138,7 @@ def create_models(features, spectators, labels, nfeatures, nspectators, nlabels,
     reduce_lr = LearningRateScheduler(learn_rate_decay)
     model_checkpoint = ModelCheckpoint('keras_model_conv1d_best.h5', monitor='val_loss', save_best_only=True)
     #callbacks = [early_stopping, model_checkpoint, reduce_lr2]
-    callbacks = [model_checkpoint, reduce_lr2]
+    callbacks = [early_stopping, model_checkpoint, reduce_lr2]
     
     #weights for training
     training_weights = {0:3.479, 1:4.002, 2:3.246, 3:2.173, 4:0.253, 5:1.360}
@@ -201,7 +201,7 @@ def create_models(features, spectators, labels, nfeatures, nspectators, nlabels,
     
     import os.path as osp
     
-    n_epochs = 1
+    n_epochs = 20
     stale_epochs = 0
     best_valid_loss = 99999
     patience = 5
