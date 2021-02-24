@@ -3,7 +3,7 @@ import json
 import numpy as np
 
 import tensorflow.keras as keras
-from tensorflow import set_random_seed
+from tensorflow.random import set_seed
 from tensorflow.keras.optimizers.schedules import ExponentialDecay
 from tensorflow.keras.callbacks import LearningRateScheduler
 from tensorflow.keras.optimizers import SGD
@@ -30,7 +30,7 @@ from visualize import visualize_roc
 
 #setting seeds for consistent results
 np.random.seed(2)
-set_random_seed(3)
+set_seed(3)
 
 #GNN Additions
 from GraphDataset import GraphDataset
