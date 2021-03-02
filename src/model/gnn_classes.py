@@ -85,7 +85,11 @@ class InteractionNetwork(torch.nn.Module):
 def test(model,loader,total,batch_size,leave=False):
     model.eval()
     
-    xentropy = nn.CrossEntropyLoss(reduction='mean')
+    # double check tensor shape
+    # try smallest being 1 instead - nathan
+    # make the model bigger, add more neurons
+    training_weights = [3.479, 4.002, 3.246, 2.173, 0.253, 1.360]    
+    xentropy = nn.CrossEntropyLoss(reduction='mean', weight = torch.Tensor(training_weights))
 
     sum_loss = 0.
     t = tqdm(enumerate(loader),total=total/batch_size,leave=leave)
@@ -103,7 +107,8 @@ def test(model,loader,total,batch_size,leave=False):
 def train(model, optimizer, loader, total, batch_size,leave=False):
     model.train()
     
-    xentropy = nn.CrossEntropyLoss(reduction='mean')
+    training_weights = [3.479, 4.002, 3.246, 2.173, 0.253, 1.360]    
+    xentropy = nn.CrossEntropyLoss(reduction='mean', weight = torch.Tensor(training_weights))
 
     sum_loss = 0.
     t = tqdm(enumerate(loader),total=total/batch_size,leave=leave)
