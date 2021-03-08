@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import seaborn as sns
 from sklearn.metrics import roc_curve, auc
 
 #used in src/model/baseline_model.py, src/model/model.py, and src/analysis/compare.py
@@ -34,19 +35,23 @@ def visualize_roc(fpr_cnn, tpr_cnn, fpr_dnn=None, tpr_dnn=None, fpr_gnn=None, tp
     for i in range(len(labels)):
         ax = fig.add_subplot(2, 3, i + 1) #create a new set of axis at location i in the figure
     
-        ax.plot(tpr_dnn[i], fpr_dnn[i], lw=2.5, label="Dense, AUC = {:.1f}%".format(auc(fpr_dnn[i],tpr_dnn[i])*100))
-        ax.plot(tpr_cnn[i], fpr_cnn[i], lw=2.5, label="Conv1D, AUC = {:.1f}%".format(auc(fpr_cnn[i],tpr_cnn[i])*100))
-        ax.plot(tpr_gnn[i], fpr_gnn[i], lw=2.5, label="Graph, AUC = {:.1f}%".format(auc(fpr_gnn[i],tpr_gnn[i])*100))
+        #ax.plot(tpr_dnn[i], fpr_dnn[i], lw=2.5, label="Dense, AUC = {:.1f}%".format(auc(fpr_dnn[i],tpr_dnn[i])*100))
+        sns.lineplot(ax=ax, fpr_dnn[i], tpr_dnn[i], label="Dense, AUC = {:.1f}%".format(auc(fpr_dnn[i],tpr_dnn[i])*100)
+        #ax.plot(tpr_cnn[i], fpr_cnn[i], lw=2.5, label="Conv1D, AUC = {:.1f}%".format(auc(fpr_cnn[i],tpr_cnn[i])*100))
+        sns.lineplot(ax=ax, fpr_cnn[i], tpr_cnn[i], label="Conv1D, AUC = {:.1f}%".format(auc(fpr_cnn[i],tpr_cnn[i])*100)
+        #ax.plot(tpr_gnn[i], fpr_gnn[i], lw=2.5, label="Graph, AUC = {:.1f}%".format(auc(fpr_gnn[i],tpr_gnn[i])*100))
+        sns.lineplot(ax=ax, fpr_gnn[i], tpr_gnn[i], label="Graph, AUC = {:.1f}%".format(auc(fpr_gnn[i],tpr_gnn[i])*100)
+                     
         
         ax.set_title(str(labels[i]))
-        ax.set_xlabel(r'True positive rate')
-        ax.set_xscale('log')
-        ax.set_ylabel(r'False positive rate')
+        ax.set_ylabel(r'True positive rate')
         ax.set_yscale('log')
+        ax.set_xlabel(r'False positive rate')
+        ax.set_xscale('log')
         ax.set_ylim(0.001,1)
         ax.set_xlim(0.001,1)
         ax.grid(True)
-        ax.legend(loc='upper left')
+        ax.legend(loc='lower right')
     
     plt.show()
     
