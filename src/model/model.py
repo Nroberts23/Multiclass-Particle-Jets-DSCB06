@@ -58,7 +58,9 @@ def create_models(features, spectators, labels, nfeatures, nspectators, nlabels,
                                 remove_unlabeled=remove_unlabeled, max_entry=max_entry)
  
 
-
+    #weights for training
+    training_weights = {0:3.479, 1:4.002, 2:3.246, 3:2.173, 4:0.253, 5:1.360}
+    
     # FULLY CONNECTED NEURAL NET CLASSIFIER
     
 
@@ -86,7 +88,8 @@ def create_models(features, spectators, labels, nfeatures, nspectators, nlabels,
                                                     steps_per_epoch=len(train_generator), 
                                                     validation_steps=len(val_generator),
                                                     max_queue_size=5,
-                                                    epochs=1, 
+                                                    epochs=50,
+                                                    class_weight=training_weights, 
                                                     shuffle=False,
                                                     callbacks = callbacks, 
                                                     verbose=0)
@@ -109,9 +112,6 @@ def create_models(features, spectators, labels, nfeatures, nspectators, nlabels,
     x = Conv1D(32, 1, strides=1, padding='same', name = 'conv1d_2', activation='relu')(x)
     x = Conv1D(32, 1, strides=1, padding='same', name = 'conv1d_3', activation='relu')(x)
     
-    #x = Conv1D(32, 1, strides=1, padding='same', name = 'conv1d_3', activation='relu')(x)
-    #x = Conv1D(32, 1, strides=1, padding='same', name = 'conv1d_4', activation='relu')(x)
-    
     # sum over tracks
     x = GlobalAveragePooling1D(name='pool_1')(x)
     x = Dense(100, name = 'dense_1', activation='relu')(x)
@@ -128,7 +128,7 @@ def create_models(features, spectators, labels, nfeatures, nspectators, nlabels,
     early_stopping = EarlyStopping(monitor='val_loss', patience=35)
     
     #defining learningrate decay model
-    num_epochs = 1
+    num_epochs = 100
     initial_learning_rate = 0.01
     decay = initial_learning_rate / num_epochs
     learn_rate_decay = lambda epoch, lr: lr * 1 / (1 + decay * epoch)
@@ -142,7 +142,7 @@ def create_models(features, spectators, labels, nfeatures, nspectators, nlabels,
     
     #weights for training
     training_weights = {0:3.479, 1:4.002, 2:3.246, 3:2.173, 4:0.253, 5:1.360}
-    training_weights2 = {0:1, 1:1, 2:1, 3:1, 4:1, 5:1}
+    
     # fit keras model
     history_conv1d = keras_model_conv1d.fit_generator(train_generator, 
                                                       validation_data = val_generator, 
@@ -150,7 +150,7 @@ def create_models(features, spectators, labels, nfeatures, nspectators, nlabels,
                                                       validation_steps=len(val_generator),
                                                       max_queue_size=5,
                                                       epochs=num_epochs,
-                                                      class_weight=training_weights2,
+                                                      class_weight=training_weights,
                                                       shuffle=False,
                                                       callbacks = callbacks, 
                                                       verbose=0)
@@ -201,7 +201,7 @@ def create_models(features, spectators, labels, nfeatures, nspectators, nlabels,
     
     import os.path as osp
     
-    n_epochs = 1
+    n_epochs = 20
     stale_epochs = 0
     best_valid_loss = 99999
     patience = 5
@@ -226,7 +226,7 @@ def create_models(features, spectators, labels, nfeatures, nspectators, nlabels,
             
     
     for epoch in t:
-        loss = train(model, optimizer, train_loader, train_samples, batch_size,leave=bool(epoch==n_epochs-1))
+        loss = train(model, optimizer, train_loader, train_samples, batch_size,leave=bool(epoch==n_epochs-1), weights=weights)
         valid_loss = test(model, valid_loader, valid_samples, batch_size,leave=bool(epoch==n_epochs-1))
         print('Epoch: {:02d}, Training Loss:   {:.4f}'.format(epoch, loss))
         print('           Validation Loss: {:.4f}'.format(valid_loss))
