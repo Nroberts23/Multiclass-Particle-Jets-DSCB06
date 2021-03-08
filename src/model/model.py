@@ -206,9 +206,27 @@ def create_models(features, spectators, labels, nfeatures, nspectators, nlabels,
     best_valid_loss = 99999
     patience = 5
     t = tqdm(range(0, n_epochs))
+    
+    
+    # calculate weights    
+    s = 0
+    for data in graph_dataset:
+        d = data[0].y[0]
+        if s is 0:
+            s = d
+        else:
 
+            s += d
+    weights = []
+    for w in s:
+        # wi = (# jets)/(# classes * # jets in class)
+        den = w.item() * 6
+        num = sum(s).item()
+        weights += [num/den] 
+            
+    
     for epoch in t:
-        loss = train(model, optimizer, train_loader, train_samples, batch_size,leave=bool(epoch==n_epochs-1))
+        loss = train(model, optimizer, train_loader, train_samples, batch_size,leave=bool(epoch==n_epochs-1), weights)
         valid_loss = test(model, valid_loader, valid_samples, batch_size,leave=bool(epoch==n_epochs-1))
         print('Epoch: {:02d}, Training Loss:   {:.4f}'.format(epoch, loss))
         print('           Validation Loss: {:.4f}'.format(valid_loss))

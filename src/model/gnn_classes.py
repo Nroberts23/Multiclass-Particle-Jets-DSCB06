@@ -88,8 +88,9 @@ def test(model,loader,total,batch_size,leave=False):
     # double check tensor shape
     # try smallest being 1 instead - nathan
     # make the model bigger, add more neurons
-    training_weights = [3.479, 4.002, 3.246, 2.173, 0.253, 1.360]    
-    xentropy = nn.CrossEntropyLoss(reduction='mean', weight = torch.Tensor(training_weights))
+#     training_weights = [3.479, 4.002, 3.246, 2.173, 0.253, 1.360]    
+#     training_weights = [3.479, 4.002, 3.246, 2.173, 0.253, 1.360]    
+    xentropy = nn.CrossEntropyLoss(reduction='mean')#, weight = torch.Tensor(training_weights))
 
     sum_loss = 0.
     t = tqdm(enumerate(loader),total=total/batch_size,leave=leave)
@@ -104,11 +105,16 @@ def test(model,loader,total,batch_size,leave=False):
 
     return sum_loss/(i+1)
 
-def train(model, optimizer, loader, total, batch_size,leave=False):
+def train(model, optimizer, loader, total, batch_size,leave=False, weights = None):
     model.train()
     
     training_weights = [3.479, 4.002, 3.246, 2.173, 0.253, 1.360]    
-    xentropy = nn.CrossEntropyLoss(reduction='mean', weight = torch.Tensor(training_weights))
+    training_weights2 = np.array([3.479, 4.002, 3.246, 2.173, 0.253, 1.360]) *(1/.253)  
+    
+    if weights:
+        xentropy = nn.CrossEntropyLoss(reduction='mean', weight = torch.Tensor(weights))
+    else:
+        xentropy = nn.CrossEntropyLoss(reduction='mean')
 
     sum_loss = 0.
     t = tqdm(enumerate(loader),total=total/batch_size,leave=leave)
