@@ -36,11 +36,11 @@ def visualize_roc(fpr_cnn, tpr_cnn, fpr_dnn=None, tpr_dnn=None, fpr_gnn=None, tp
         ax = fig.add_subplot(2, 3, i + 1) #create a new set of axis at location i in the figure
     
         #ax.plot(tpr_dnn[i], fpr_dnn[i], lw=2.5, label="Dense, AUC = {:.1f}%".format(auc(fpr_dnn[i],tpr_dnn[i])*100))
-        sns.lineplot(ax=ax, x=fpr_dnn[i], y=tpr_dnn[i], label="Dense, AUC = {:.1f}%".format(auc(fpr_dnn[i],tpr_dnn[i])*100)
+        sns.lineplot(ax=ax, x=fpr_dnn[i], y=tpr_dnn[i], label="Dense, AUC = {:.1f}%".format(auc(fpr_dnn[i],tpr_dnn[i])*100))
         #ax.plot(tpr_cnn[i], fpr_cnn[i], lw=2.5, label="Conv1D, AUC = {:.1f}%".format(auc(fpr_cnn[i],tpr_cnn[i])*100))
-        sns.lineplot(ax=ax, x=fpr_cnn[i], y=tpr_cnn[i], label="Conv1D, AUC = {:.1f}%".format(auc(fpr_cnn[i],tpr_cnn[i])*100)
+        sns.lineplot(ax=ax, x=fpr_cnn[i], y=tpr_cnn[i], label="Conv1D, AUC = {:.1f}%".format(auc(fpr_cnn[i],tpr_cnn[i])*100))
         #ax.plot(tpr_gnn[i], fpr_gnn[i], lw=2.5, label="Graph, AUC = {:.1f}%".format(auc(fpr_gnn[i],tpr_gnn[i])*100))
-        sns.lineplot(ax=ax, x=fpr_gnn[i], y=tpr_gnn[i], label="Graph, AUC = {:.1f}%".format(auc(fpr_gnn[i],tpr_gnn[i])*100)
+        sns.lineplot(ax=ax, x=fpr_gnn[i], y=tpr_gnn[i], label="Graph, AUC = {:.1f}%".format(auc(fpr_gnn[i],tpr_gnn[i])*100))
                      
         
         ax.set_title(str(labels[i]))
