@@ -86,7 +86,7 @@ def create_models(features, spectators, labels, nfeatures, nspectators, nlabels,
                                                     steps_per_epoch=len(train_generator), 
                                                     validation_steps=len(val_generator),
                                                     max_queue_size=5,
-                                                    epochs=50, 
+                                                    epochs=1, 
                                                     shuffle=False,
                                                     callbacks = callbacks, 
                                                     verbose=0)
@@ -128,7 +128,7 @@ def create_models(features, spectators, labels, nfeatures, nspectators, nlabels,
     early_stopping = EarlyStopping(monitor='val_loss', patience=35)
     
     #defining learningrate decay model
-    num_epochs = 100
+    num_epochs = 1
     initial_learning_rate = 0.01
     decay = initial_learning_rate / num_epochs
     learn_rate_decay = lambda epoch, lr: lr * 1 / (1 + decay * epoch)
@@ -150,7 +150,7 @@ def create_models(features, spectators, labels, nfeatures, nspectators, nlabels,
                                                       validation_steps=len(val_generator),
                                                       max_queue_size=5,
                                                       epochs=num_epochs,
-                                                      class_weight=training_weights,
+                                                      class_weight=training_weights2,
                                                       shuffle=False,
                                                       callbacks = callbacks, 
                                                       verbose=0)
@@ -201,7 +201,7 @@ def create_models(features, spectators, labels, nfeatures, nspectators, nlabels,
     
     import os.path as osp
     
-    n_epochs = 20
+    n_epochs = 1
     stale_epochs = 0
     best_valid_loss = 99999
     patience = 5
@@ -226,7 +226,7 @@ def create_models(features, spectators, labels, nfeatures, nspectators, nlabels,
             
     
     for epoch in t:
-        loss = train(model, optimizer, train_loader, train_samples, batch_size,leave=bool(epoch==n_epochs-1), weights)
+        loss = train(model, optimizer, train_loader, train_samples, batch_size,leave=bool(epoch==n_epochs-1))
         valid_loss = test(model, valid_loader, valid_samples, batch_size,leave=bool(epoch==n_epochs-1))
         print('Epoch: {:02d}, Training Loss:   {:.4f}'.format(epoch, loss))
         print('           Validation Loss: {:.4f}'.format(valid_loss))
@@ -307,7 +307,7 @@ def create_models(features, spectators, labels, nfeatures, nspectators, nlabels,
 
     # plot ROC curves
     visualize_roc(fpr_cnn, tpr_cnn, fpr_dnn, tpr_dnn, fpr_gnn, tpr_gnn)
-    visualize('fnn_vs_conv1d.png')
+    visualize('fnn_vs_conv1d.pdf')
     
     
 

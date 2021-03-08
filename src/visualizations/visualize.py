@@ -28,8 +28,9 @@ def visualize_loss(model):
     
 #used in src/model/baseline_model.py, src/model/model.py
 def visualize_roc(fpr_cnn, tpr_cnn, fpr_dnn=None, tpr_dnn=None, fpr_gnn=None, tpr_gnn=None):
-    fig = plt.figure(figsize=(16, 10))
-    fig.suptitle('ROC Curves by Class of Particle')
+    sns.set_theme()
+    fig = plt.figure(figsize=(20, 15))
+    fig.suptitle('ROC Curves by Class of Particle', fontsize=20)
     
     labels = ['QCD_b', 'QCD_bb', 'QCD_c', 'QCD_cc', 'QCD_other', 'H_bb']
     for i in range(len(labels)):
